@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>TinyApp</title>
+  <header>
+    <% include ./partials/header %>
+  </header>
+</head>
+<body>
+    <!-- Add your EJS code here -->
+  <h2>URLS</h2>
+  <ul>
+     <% for (var key in urlDatabase) { %>
+        <li><%= key + ': ' + urlDatabase[key] %></li>
+      <% } %>
+  </ul>
+  <footer>
+    <% include ./partials/footer %>
+  </footer>
+</body>
+</html>
