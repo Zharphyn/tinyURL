@@ -69,10 +69,12 @@ app.get("/u/:shortURL", (request, response) => {
   }
 });
 
+
 app.post("/urls", (request, response) => {
   response.render("urls_index", { urlDatabase: urlDatabase });
 });
 
+// Convert shortURL to longURL and go to longURL site
 app.post("/urls/u/:shortURL", (request, response) => {
   let shortURL = request.params.shortURL;
   let longURL = urlDatabase[shortURL];
@@ -85,28 +87,33 @@ app.post("/urls/u/:shortURL", (request, response) => {
   }
 });
 
+// Edit the link for a shortURL
 app.post("/urls/:shortURL", (request, response) => {
   let shortURL = request.params.shortURL;
   let longURL = urlDatabase[shortURL];
   response.render("urls_show", {longURL : longURL, shortURL : shortURL });
 });
 
+// Update the longURL using same shortURL
 app.post("/urls/show/:shortURL", (request, response) => {
 	urlDatabase[request.params.shortURL] = request.body.name;
 	response.redirect(`${server}/urls_index`);
 });
 
+// Deletes a shortURL / longURL pair from the database
 app.post("/urls/:shortURL/delete", (request, response) => {
   delete urlDatabase[request.params.shortURL];
   response.redirect('back');
 });
 
+// adds a new shortURL / longURL pair to the database
 app.post("/urls/new", (request, response) => {
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = request.body.longURL;
   response.redirect(`http://localhost:8080/urls/${shortURL}`);
 });
 
+//H Hello World
 app.get("/hello", (request, response) => {
   response.end("<html><body>Hello <b>World</b></body></html>\n");
 });
