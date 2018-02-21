@@ -6,6 +6,8 @@ const url = require('url');
 const app = express();
 // default port 8080
 const PORT = process.env.PORT || 8080;
+// default server
+const server = 'localhost:8080';
 // sets the view engine
 app.set('view engine', 'ejs');
 
@@ -51,8 +53,8 @@ app.get("/urls/new", (request, response) => {
 app.get("/urls/:shortURL", (request, response) => {
   let shortURL = request.params.shortURL;
   let longURL = urlDatabase[shortURL];
-
-  response.render("urls_show", { shortURL: shortURL, longURL: longURL });
+  let templateVars = {shortURL, longURL};
+  response.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (request, response) => {
@@ -71,6 +73,28 @@ app.post("/urls", (request, response) => {
   response.render("urls_index", { urlDatabase: urlDatabase });
 });
 
+app.post("/urls/u/:shortURL", (request, response) => {
+  let shortURL = request.params.shortURL;
+  let longURL = urlDatabase[shortURL];
+  if (longURL !== undefined) {
+    response.status(302);
+    response.redirect(longURL);
+  } else {
+    response.status(404);
+    response.redirect('https://http.cat/404');
+  }
+});
+
+app.post("/urls/:shortURL", (request, response) => {
+  let shortURL = request.params.shortURL;
+  let longURL = urlDatabase[shortURL];
+  response.render("urls_show", {longURL : longURL, shortURL : shortURL });
+});
+
+app.post("/urls/show/:shortURL", (request, response) => {
+	urlDatabase[request.params.shortURL] = request.body.name;
+	response.redirect(`${server}/urls_index`);
+});
 
 app.post("/urls/:shortURL/delete", (request, response) => {
   delete urlDatabase[request.params.shortURL];

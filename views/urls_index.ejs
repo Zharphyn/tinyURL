@@ -11,11 +11,19 @@
 <!--   <form action="/urls" method="POST" style="margin:150px;"> --> 
  	<ul>
      <% for (var key in urlDatabase) { %>
-        <form method= "post" action="/urls/<%= key %>/delete">
-          <li><%= key + ': ' + urlDatabase[key] %><button type="submit">Delete</button>
+          <li>
+          	<%= key + ': ' + urlDatabase[key] %>
+            <form method= "post"  style= "display: inline;" action="/urls/<%= key %>/delete">
+              <button type="submit">Delete</button>
+            </form>
+            <form method= "post"  style= "display: inline;" action="/urls/<%= key %>">
+              <button type="submit">Update</button>
+            </form>
+            <form method= "post"  style= "display: inline;" action="/urls/u/<%= key %>">
+              <button type="submit">Follow</button>
+            </form>
           </li>
-        </form>
-      <% } %>
+              <% } %>
   </ul>
 <!-- </form> -->
   <footer>
