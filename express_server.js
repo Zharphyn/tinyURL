@@ -2,9 +2,12 @@
 
 const express = require("express");
 const url = require('url');
-const app = express(); // starts express
-const PORT = process.env.PORT || 8080; // default port 8080
-app.set('view engine', 'ejs'); // sets the view engine
+// starts express
+const app = express();
+// default port 8080
+const PORT = process.env.PORT || 8080;
+// sets the view engine
+app.set('view engine', 'ejs');
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
@@ -19,8 +22,7 @@ function generateRandomString() {
   var text = "";
   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-  for (var i = 0; i < 6; i++)
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  for (var i = 0; i < 6; i++) { text += possible.charAt(Math.floor(Math.random() * possible.length)); }
 
   return text;
 }
@@ -47,30 +49,35 @@ app.get("/urls/new", (request, response) => {
 });
 
 app.get("/urls/:shortURL", (request, response) => {
-	let shortURL = request.params.shortURL;
-	let longURL = urlDatabase[shortURL];
+  let shortURL = request.params.shortURL;
+  let longURL = urlDatabase[shortURL];
 
-    response.render("urls_show",{ shortURL : shortURL, longURL : longURL });
-	// let longURL = urlDatabase[shortURL];
-	// let data = {'shortURL': shortURL,
- //                 'longURL': longURL};
-	// html = new EJS({url: '/template.ejs'}).render(data);
+  response.render("urls_show", { shortURL: shortURL, longURL: longURL });
 });
 
 app.get("/u/:shortURL", (request, response) => {
   let shortURL = request.params.shortURL;
   let longURL = urlDatabase[shortURL];
   if (longURL !== undefined) {
-  	response.status(302);
+    response.status(302);
     response.redirect(longURL);
   } else {
-     response.status(404);
-     response.redirect('https://http.cat/404');
+    response.status(404);
+    response.redirect('https://http.cat/404');
   }
 });
 
-
 app.post("/urls", (request, response) => {
+  response.render("urls_index", { urlDatabase: urlDatabase });
+});
+
+
+app.post("/urls/:shortURL/delete", (request, response) => {
+  delete urlDatabase[request.params.shortURL];
+  response.redirect('back');
+});
+
+app.post("/urls/new", (request, response) => {
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = request.body.longURL;
   response.redirect(`http://localhost:8080/urls/${shortURL}`);

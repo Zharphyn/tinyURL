@@ -8,11 +8,16 @@
     <% include ./partials/_header %>
   </header>    <!-- Add your EJS code here -->
   <h2>URLS</h2>
-  <ul>
+<!--   <form action="/urls" method="POST" style="margin:150px;"> --> 
+ 	<ul>
      <% for (var key in urlDatabase) { %>
-        <li><%= key + ': ' + urlDatabase[key] %></li>
+        <form method= "post" action="/urls/<%= key %>/delete">
+          <li><%= key + ': ' + urlDatabase[key] %><button type="submit">Delete</button>
+          </li>
+        </form>
       <% } %>
   </ul>
+<!-- </form> -->
   <footer>
     <% include ./partials/_footer %>
   </footer>
