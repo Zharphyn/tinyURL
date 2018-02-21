@@ -50,7 +50,13 @@ app.get("/urls/new", (request, response) => {
 app.get("/u/:shortURL", (request, response) => {
   let shortURL = request.params.shortURL;
   let longURL = urlDatabase[shortURL];
-  response.redirect(longURL);
+  if (longURL !== undefined) {
+  	response.status(302);
+    response.redirect(longURL);
+  } else {
+     response.status(404);
+     response.redirect('https://http.cat/404');
+  }
 });
 
 
