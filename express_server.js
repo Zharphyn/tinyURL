@@ -1,6 +1,7 @@
 /*jshint esversion: 6 */
 
 const express = require("express");
+const url = require('url');
 const app = express(); // starts express
 const PORT = process.env.PORT || 8080; // default port 8080
 app.set('view engine', 'ejs'); // sets the view engine
@@ -41,13 +42,21 @@ app.get("/urls", (request, response) => {
   response.render("urls_index", { urlDatabase: urlDatabase });
 });
 
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+app.get("/urls/new", (request, response) => {
+  response.render("urls_new");
 });
 
-app.post("/urls", (req, res) => {
-  console.log(req.body);  // debug statement to see POST parameters
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+
+app.get("/u/:shortURL", (request, response) => {
+  let shortURL = request.params.shortURL;
+  let longURL = urlDatabase[shortURL];
+  response.redirect(longURL);
+});
+
+
+app.post("/urls", (request, response) => {
+  console.log(request.body);  // debug statement to see POST parameters
+  response.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/hello", (request, response) => {
