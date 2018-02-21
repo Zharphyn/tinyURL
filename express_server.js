@@ -46,6 +46,16 @@ app.get("/urls/new", (request, response) => {
   response.render("urls_new");
 });
 
+app.get("/urls/:shortURL", (request, response) => {
+	let shortURL = request.params.shortURL;
+	let longURL = urlDatabase[shortURL];
+
+    response.render("urls_show",{ shortURL : shortURL, longURL : longURL });
+	// let longURL = urlDatabase[shortURL];
+	// let data = {'shortURL': shortURL,
+ //                 'longURL': longURL};
+	// html = new EJS({url: '/template.ejs'}).render(data);
+});
 
 app.get("/u/:shortURL", (request, response) => {
   let shortURL = request.params.shortURL;
@@ -61,8 +71,9 @@ app.get("/u/:shortURL", (request, response) => {
 
 
 app.post("/urls", (request, response) => {
-  console.log(request.body);  // debug statement to see POST parameters
-  response.send("Ok");         // Respond with 'Ok' (we will replace this)
+  let shortURL = generateRandomString();
+  urlDatabase[shortURL] = request.body.longURL;
+  response.redirect(`http://localhost:8080/urls/${shortURL}`);
 });
 
 app.get("/hello", (request, response) => {
