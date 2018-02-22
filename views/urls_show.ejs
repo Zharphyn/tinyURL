@@ -12,8 +12,8 @@
   </header>    <!-- Add your EJS code here -->
     <form method= "post" action="/urls/show/<%= shortURL %>" >
       <h2>Shortened URL : http://localhost:8080/u/<%= shortURL %> </h2>
-       <input size = <%= longURL.length %> id="longURL" type="text" name="name" value="<%= longURL %>">
-       <button type="submit">Update</button>
+      <input size = <%= longURL.length %> id="longURL" type="text" name="name" value="<%= longURL %>">
+      <button type="submit">Update</button>
     </form>
   <footer>
     <% include ./partials/_footer %>

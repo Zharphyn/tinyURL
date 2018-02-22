@@ -2,8 +2,12 @@
 
 const express = require("express");
 const url = require('url');
+const cookieParser = require('cookie-parser');
+const bodyParser = require("body-parser");
+
 // starts express
 const app = express();
+
 // default port 8080
 const PORT = process.env.PORT || 8080;
 // default server
@@ -11,8 +15,8 @@ const server = 'localhost:8080';
 // sets the view engine
 app.set('view engine', 'ejs');
 
-const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -21,14 +25,16 @@ const urlDatabase = {
 
 // Genereate a random 6 char string of Upper/Lower case letters and numbers
 function generateRandomString() {
-  var text = "";
-  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let text = "";
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+  const possible = alphabet + alphabet.toUpperCase() + '1234567890';
 
-  for (var i = 0; i < 6; i++) { text += possible.charAt(Math.floor(Math.random() * possible.length)); }
+  for (var i = 0; i < 6; i++) {
+  	text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
 
   return text;
 }
-
 
 app.get("/", (request, response) => {
   response.end("Hello!");
@@ -43,17 +49,17 @@ app.get("/urls.json", (request, response) => {
 });
 
 app.get("/urls", (request, response) => {
-  response.render("urls_index", { urlDatabase: urlDatabase });
+  response.render("urls_index", { urlDatabase: urlDatabase, username: request.cookies.username });
 });
 
 app.get("/urls/new", (request, response) => {
-  response.render("urls_new");
+  response.render("urls_new", {username: request.cookies.username});
 });
 
 app.get("/urls/:shortURL", (request, response) => {
   let shortURL = request.params.shortURL;
   let longURL = urlDatabase[shortURL];
-  let templateVars = {shortURL, longURL};
+  let templateVars = {shortURL, longURL, username: request.cookies.username};
   response.render("urls_show", templateVars);
 });
 
@@ -69,9 +75,27 @@ app.get("/u/:shortURL", (request, response) => {
   }
 });
 
+// Logs in the user
+app.post("/login", (request, response) => {
+  let username = request.body.username;
+  console.log(`Username = ${username}`, `Request.body.name = ${request.body.username}`);
+  console.log(request.body);
+  if (username) {
+    response.cookie('username', username);
+  } else {
+  	response.cookie('username', 'Unknown');
+  }
+  response.redirect('back');
+});
+
+app.post("/logout", (request, response) => {
+  response.clearCookie('username');
+  response.redirect('back');
+
+});
 
 app.post("/urls", (request, response) => {
-  response.render("urls_index", { urlDatabase: urlDatabase });
+  response.render("urls_index", { urlDatabase: urlDatabase, username: request.cookies.username });
 });
 
 // Convert shortURL to longURL and go to longURL site
@@ -91,7 +115,7 @@ app.post("/urls/u/:shortURL", (request, response) => {
 app.post("/urls/:shortURL", (request, response) => {
   let shortURL = request.params.shortURL;
   let longURL = urlDatabase[shortURL];
-  response.render("urls_show", {longURL : longURL, shortURL : shortURL });
+  response.render("urls_show", {longURL : longURL, shortURL : shortURL, username: request.cookies.username });
 });
 
 // Update the longURL using same shortURL
