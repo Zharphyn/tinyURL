@@ -44,6 +44,17 @@ const users = {
 };
 
 const saltRounds = 10;
+// define emply user object
+const emptyUser = {
+	id: '',
+	email: '',
+	password: ''
+};
+
+
+// need to replace this variable with a call to the cookie
+let userID = '';
+
 
 //const equal = bcrypt.compareSync(password, hashedPassword);
 
@@ -90,17 +101,35 @@ app.get("/urls.json", (request, response) => {
 });
 
 app.get("/urls", (request, response) => {
-  response.render("urls_index", { urlDatabase: urlDatabase, username: request.cookies.username });
+  let templateVars = {urlDatabase: urlDatabase};
+  if (userID) {
+  	templateVars.user = users[userID];
+  } else {
+  	templateVars.user = emptyUser;
+  }
+
+  response.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (request, response) => {
-  response.render("urls_new", {username: request.cookies.username});
+  let templateVars = {urlDatabase: urlDatabase};
+  if (userID) {
+  	templateVars.user = users[userID];
+  } else {
+  	templateVars.user = emptyUser;
+  }
+  response.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (request, response) => {
   let shortURL = request.params.shortURL;
   let longURL = urlDatabase[shortURL];
-  let templateVars = {shortURL, longURL, username: request.cookies.username};
+  let templateVars = {shortURL, longURL};
+  if (userID) {
+  	templateVars.user = users[userID];
+  } else {
+  	templateVars.user = emptyUser;
+  }
   response.render("urls_show", templateVars);
 });
 
@@ -117,7 +146,13 @@ app.get("/u/:shortURL", (request, response) => {
 });
 
 app.get("/register", (request, response) => {
-	response.render('register', { username: request.cookies.username });
+  let templateVars = {};
+  if (userID) {
+  	templateVars.user = users[userID];
+  } else {
+  	templateVars.user = emptyUser;
+  }
+	response.render('register', templateVars);
 });
 
 app.post("/register", (request, response) => {
@@ -125,9 +160,9 @@ app.post("/register", (request, response) => {
 
   if (checkEmailAndPassword(email,request.body.password)) { 
     const password = bcrypt.hashSync(request.body.password, saltRounds);
-    const userID = generateRandomString();
+    userID = generateRandomString();
     users[userID] = { id: userID, email: email, password: password };
-    response.cookie('username', users[userID].email); 
+    response.cookie('email', users[userID].email); 
     response.redirect("/urls");
   } else {
     response.status(400);
@@ -138,13 +173,13 @@ app.post("/register", (request, response) => {
 
 // Logs in the user
 app.post("/login", (request, response) => {
-  let username = request.body.username;
+  let email = request.body.email;
   // console.log(`Username = ${username}`, `Request.body.name = ${request.body.username}`);
   // console.log(request.body);
-  if (username) {
-    response.cookie('username', username);
+  if (users[userID]) {
+    response.cookie('email', email);
   } else {
-  	response.cookie('username', 'Unknown');
+  	response.cookie('email', 'Unknown');
   }
   // const email = req.body.email;
   // const password = req.body.password;
@@ -182,13 +217,19 @@ app.post("/login", (request, response) => {
 });
 
 app.post("/logout", (request, response) => {
-  response.clearCookie('username');
+  response.clearCookie('email');
   response.redirect('back');
 
 });
 
 app.post("/urls", (request, response) => {
-  response.render("urls_index", { urlDatabase: urlDatabase, username: request.cookies.username });
+  let templateVars = {urlDatabase: urlDatabase};
+  if (userID) {
+  	templateVars.user = users[userID];
+  } else {
+  	templateVars.user = emptyUser;
+  }
+  response.render("urls_index", templateVars);
 });
 
 // Convert shortURL to longURL and go to longURL site
@@ -208,7 +249,13 @@ app.post("/urls/u/:shortURL", (request, response) => {
 app.post("/urls/:shortURL", (request, response) => {
   let shortURL = request.params.shortURL;
   let longURL = urlDatabase[shortURL];
-  response.render("urls_show", {longURL : longURL, shortURL : shortURL, username: request.cookies.username });
+  let templateVars = {longURL : longURL, shortURL : shortURL};
+  if (userID) {
+  	templateVars.user = users[userID];
+  } else {
+  	templateVars.user = emptyUser;
+  }
+  response.render("urls_show", templateVars );
 });
 
 // Update the longURL using same shortURL

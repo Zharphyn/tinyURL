@@ -8,14 +8,15 @@
     body    { padding-top:50px; }
 </style>
 
-    <% if(username){ %>
+    <% if(user.email){ %>
       <form method= "post" action="/logout" style= "display: inline;" >
-        <input id="username" type="text" name="username" value="<%=username%>">
+        <%= email %>
         <button type="submit">Logout</button>
       </form>
     <% } else{ %>  
        <form method= "post" action="/login" style= "display: inline;" >
-         <input id="username" type="text" name="username" value="">
+         <input id="email" type="email" name="email" value="">
+         <input id="password" type="password" name="password" value="">
          <button type="submit">Login</button>
       </form>
     <% } %>
