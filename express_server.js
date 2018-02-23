@@ -41,12 +41,27 @@ const users = {
     email: "user2@example.com", 
     password: "dishwasher-funk"
   }
-}
+};
 
 const saltRounds = 10;
 
 //const equal = bcrypt.compareSync(password, hashedPassword);
 
+// checks if email is empty or already exists
+function checkEmailAndPassword(email,password) {
+  if (email !== '' && password !== '') {
+    for (const keys in users) {
+  	  if (email === users[keys].email) {
+  	  	console.log('Already exists');
+  	    return false;
+  	  }
+    }
+  } else {
+  	console.log('Is empty');
+    return false;
+  }
+  return true;
+}
 
 
 // Genereate a random 6 char string of Upper/Lower case letters and numbers
@@ -107,11 +122,18 @@ app.get("/register", (request, response) => {
 
 app.post("/register", (request, response) => {
   const email = request.body.email;
-  const password = bcrypt.hashSync(request.body.password, saltRounds);
-  const userID = generateRandomString();
-  users[userID] = { id: userID, email: email, password: password };
-  response.cookie('username', users[userID].email); 
-  response.redirect("/urls");
+
+  if (checkEmailAndPassword(email,request.body.password)) { 
+    const password = bcrypt.hashSync(request.body.password, saltRounds);
+    const userID = generateRandomString();
+    users[userID] = { id: userID, email: email, password: password };
+    response.cookie('username', users[userID].email); 
+    response.redirect("/urls");
+  } else {
+    response.status(400);
+    response.redirect('https://http.cat/400');
+  }
+
 });
 
 // Logs in the user
