@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+</head>
+<body>
+  <header>
+    <% include ./partials/_header %>
+  </header>    
+
+    <form method= "post" action="/register" style= "display: inline;" >
+      <input id="email" type="email" name="email" value="">
+      <input id="password" type="password" name="password" value="">
+      <button type="submit">Register</button>
+    </form>
+
+<!-- The email field should use type=email and have name=email. The password field should use type=password and have name=password. -->
+
+  <footer>
+    <% include ./partials/_footer %>
+  </footer>
+</body>
+</html>

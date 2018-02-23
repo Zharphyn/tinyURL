@@ -4,24 +4,50 @@ const express = require("express");
 const url = require('url');
 const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
+const bcrypt = require('bcrypt');
+const cookieSession = require('cookie-session');
 
-// starts express
+
 const app = express();
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieSession({
+  name: 'session',
+  keys: [process.env.SECRET_KEY || 'dvelopment'],
+}));
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 // default port 8080
 const PORT = process.env.PORT || 8080;
 // default server
 const server = 'localhost:8080';
+
 // sets the view engine
 app.set('view engine', 'ejs');
-
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
+const saltRounds = 10;
+
+//const equal = bcrypt.compareSync(password, hashedPassword);
+
+
 
 // Genereate a random 6 char string of Upper/Lower case letters and numbers
 function generateRandomString() {
@@ -75,16 +101,61 @@ app.get("/u/:shortURL", (request, response) => {
   }
 });
 
+app.get("/register", (request, response) => {
+	response.render('register', { username: request.cookies.username });
+});
+
+app.post("/register", (request, response) => {
+  const email = request.body.email;
+  const password = bcrypt.hashSync(request.body.password, saltRounds);
+  const userID = generateRandomString();
+  users[userID] = { id: userID, email: email, password: password };
+  response.cookie('username', users[userID].email); 
+  response.redirect("/urls");
+});
+
 // Logs in the user
 app.post("/login", (request, response) => {
   let username = request.body.username;
-  console.log(`Username = ${username}`, `Request.body.name = ${request.body.username}`);
-  console.log(request.body);
+  // console.log(`Username = ${username}`, `Request.body.name = ${request.body.username}`);
+  // console.log(request.body);
   if (username) {
     response.cookie('username', username);
   } else {
   	response.cookie('username', 'Unknown');
   }
+  // const email = req.body.email;
+  // const password = req.body.password;
+
+  // // Try and find the user with this email address
+  // let user;
+  // for (let userId in database.users) {
+  //   const dbUser = database.users[userId];
+
+  //   if (dbUser.email === email) {
+  //     user = dbUser;
+  //     break;
+  //   }
+  // }
+
+  // // check the password
+  // if (user) {
+  //   if (bcrypt.compareSync(password, user.password)) {
+  //     // logged in
+  //     // send a cookie to the user 
+  //     req.session.userId = user.userId;
+  //     res.redirect('/');
+  //   } else {
+  //     res.status(401).send("💩");
+  //   }
+  // } else {
+  //   res.status(401).send("💩");
+  // }
+
+
+
+
+
   response.redirect('back');
 });
 
