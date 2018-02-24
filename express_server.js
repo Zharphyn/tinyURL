@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
-
+const _ = require("underscore");
 
 const app = express();
 app.use(bodyParser.urlencoded({extended: true}));
@@ -55,8 +55,15 @@ const emptyUser = {
 // need to replace this variable with a call to the cookie
 let userID = '';
 
+function findUserID(email){
+  for (let user in users) {
+  	if (users[user].email === email) {
+  		return user;
+  	}
+  }
+  return '';
+}
 
-//const equal = bcrypt.compareSync(password, hashedPassword);
 
 // checks if email is empty or already exists
 function checkEmailAndPassword(email,password) {
@@ -113,6 +120,7 @@ app.get("/urls", (request, response) => {
 
 app.get("/urls/new", (request, response) => {
   let templateVars = {urlDatabase: urlDatabase};
+  console.log(userID);
   if (userID) {
   	templateVars.user = users[userID];
   } else {
@@ -145,6 +153,17 @@ app.get("/u/:shortURL", (request, response) => {
   }
 });
 
+app.get("/login", (request, response) => {
+  let templateVars = {};
+  if (userID) {
+  	templateVars.user = users[userID];
+  } else {
+  	templateVars.user = emptyUser;
+  }	response.render("login", templateVars);
+
+
+});
+
 app.get("/register", (request, response) => {
   let templateVars = {};
   if (userID) {
@@ -173,50 +192,31 @@ app.post("/register", (request, response) => {
 
 // Logs in the user
 app.post("/login", (request, response) => {
-  let email = request.body.email;
-  // console.log(`Username = ${username}`, `Request.body.name = ${request.body.username}`);
-  // console.log(request.body);
-  if (users[userID]) {
-    response.cookie('email', email);
+  console.log(request.body);
+  const email = request.body.email;
+  const password = request.body.password;
+  if (email !== '' && password !== '')  {
+    userID = findUserID(email);
+    console.log(userID);
+  	if (userID !== '' && bcrypt.compareSync(password, users[userID].password))  {
+      response.cookie('email', users[userID].email); 
+      response.redirect("/urls");
+  	} else {
+  	  console.log('UserID / Password verification failure');
+      response.status(400);
+      response.redirect('https://http.cat/400');
+    }
   } else {
+  	console.log('Failed basic email / password existance checker');
   	response.cookie('email', 'Unknown');
+  	response.status(400);
+    response.redirect('https://http.cat/400');
   }
-  // const email = req.body.email;
-  // const password = req.body.password;
-
-  // // Try and find the user with this email address
-  // let user;
-  // for (let userId in database.users) {
-  //   const dbUser = database.users[userId];
-
-  //   if (dbUser.email === email) {
-  //     user = dbUser;
-  //     break;
-  //   }
-  // }
-
-  // // check the password
-  // if (user) {
-  //   if (bcrypt.compareSync(password, user.password)) {
-  //     // logged in
-  //     // send a cookie to the user 
-  //     req.session.userId = user.userId;
-  //     res.redirect('/');
-  //   } else {
-  //     res.status(401).send("💩");
-  //   }
-  // } else {
-  //   res.status(401).send("💩");
-  // }
-
-
-
-
-
   response.redirect('back');
 });
 
 app.post("/logout", (request, response) => {
+  userID = '';
   response.clearCookie('email');
   response.redirect('back');
 
