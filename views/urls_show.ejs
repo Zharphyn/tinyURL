@@ -12,7 +12,7 @@
   </header>
     <form method= "post" action="/urls/show/<%= shortURL %>" >
       <h2>Shortened URL : http://localhost:8080/u/<%= shortURL %> </h2>
-      <input size = <%  if (longURL === undefined) { return 60; } else {return longURL.length;} %> id="longURL" type="text" name="name" value="<%= longURL %>">
+      <input size = 60;  id="longURL" type="text" name="name" value="<%= longURL %>">
       <button type="submit">Update</button>
     </form>
   <footer>

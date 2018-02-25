@@ -25,9 +25,12 @@ const server = 'localhost:8080';
 // sets the view engine
 app.set('view engine', 'ejs');
 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+const urlDatabase = { 
+  "zds001": {
+    "b2xVn2": "http://www.lighthouselabs.ca",
+    "9sm5xK": "http://www.1pmscouts.rocks",
+    "cat001": "https:http.cat"
+  }
 };
 
 const users = { 
@@ -36,8 +39,8 @@ const users = {
     email: "brad@zharphyn.ca", 
     password: "$2a$10$e5A1yqhI2ARxP0..SmUM.eGpNk1UbxTb0BirIdzG5NxlZBmz.Uppe"
   },
- "user2RandomID": {
-    id: "user2RandomID", 
+ "Xgt6I0": {
+    id: "Xgt6I0", 
     email: "user2@example.com", 
     password: "dishwasher-funk"
   }
@@ -108,19 +111,20 @@ app.get("/urls.json", (request, response) => {
 });
 
 app.get("/urls", (request, response) => {
-  let templateVars = {urlDatabase: urlDatabase};
+  let templateVars = {urlDatabase: urlDatabase[userID]};
   if (userID) {
   	templateVars.user = users[userID];
+    response.render("urls_index", templateVars);
   } else {
-  	templateVars.user = emptyUser;
+  	response.redirect('/login');
   }
 
-  response.render("urls_index", templateVars);
+
 });
 
 app.get("/urls/new", (request, response) => {
-  if (userID != ''){
-    let templateVars = {urlDatabase: urlDatabase};
+  if (userID !== ''){
+    let templateVars = {urlDatabase: urlDatabase[userID]};
     templateVars.user = users[userID];
     response.render("urls_new", templateVars);
   } else {
@@ -129,21 +133,30 @@ app.get("/urls/new", (request, response) => {
 });
 
 app.get("/urls/:shortURL", (request, response) => {
-  let shortURL = request.params.shortURL;
-  let longURL = urlDatabase[shortURL];
-  let templateVars = {shortURL, longURL};
   if (userID) {
+    let shortURL = request.params.shortURL;
+    let longURL = urlDatabase[userID][shortURL];
+    let templateVars = {shortURL, longURL};
   	templateVars.user = users[userID];
+    response.render("urls_show", templateVars);
   } else {
-  	templateVars.user = emptyUser;
+  	response.redirect('/login');
   }
-  response.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (request, response) => {
   let shortURL = request.params.shortURL;
-  let longURL = urlDatabase[shortURL];
-  if (longURL !== undefined) {
+  let longURL = '';
+  if (userID) {
+    longURL = urlDatabase[userID][shortURL];
+  } else {
+    for (let key in urlDatabase) {
+      if (urlDatabase[key][shortURL] !== undefined) {
+  	    longURL = urlDatabase[key][shortURL];
+  	  }
+  	}
+  }
+  if (longURL !== undefined && longURL !== '') {
     response.status(302);
     response.redirect(longURL);
   } else {
@@ -223,20 +236,21 @@ app.post("/logout", (request, response) => {
 });
 
 app.post("/urls", (request, response) => {
-  let templateVars = {urlDatabase: urlDatabase};
+  let templateVars = {urlDatabase: urlDatabase[userID]};
   if (userID) {
   	templateVars.user = users[userID];
+    response.render("urls_index", templateVars);
   } else {
   	templateVars.user = emptyUser;
+  	response.redirect('/login');
   }
-  response.render("urls_index", templateVars);
 });
 
 // Convert shortURL to longURL and go to longURL site
 app.post("/urls/u/:shortURL", (request, response) => {
-  let shortURL = request.params.shortURL;
-  let longURL = urlDatabase[shortURL];
   if (longURL !== undefined) {
+    let shortURL = request.params.shortURL;
+    let longURL = urlDatabase[userID][shortURL];
     response.status(302);
     response.redirect(longURL);
   } else {
@@ -247,33 +261,41 @@ app.post("/urls/u/:shortURL", (request, response) => {
 
 // Edit the link for a shortURL
 app.post("/urls/:shortURL", (request, response) => {
-  let shortURL = request.params.shortURL;
-  let longURL = urlDatabase[shortURL];
-  let templateVars = {longURL : longURL, shortURL : shortURL};
   if (userID) {
+    let shortURL = request.params.shortURL;
+    let longURL = urlDatabase[userID][shortURL];
+    let templateVars = {longURL : longURL, shortURL : shortURL};
   	templateVars.user = users[userID];
+    response.render("urls_show", templateVars );
   } else {
-  	templateVars.user = emptyUser;
+  	response.redirect('/login');
   }
-  response.render("urls_show", templateVars );
 });
 
 // Update the longURL using same shortURL
 app.post("/urls/show/:shortURL", (request, response) => {
-	urlDatabase[request.params.shortURL] = request.body.name;
-	response.redirect(`${server}/urls_index`);
+	if (userID) {
+	  urlDatabase[userID][request.params.shortURL] = request.body.name;
+	  response.redirect(`${server}/urls_index`);
+	} else {
+	  response.redirect('/login');
+	}
 });
 
 // Deletes a shortURL / longURL pair from the database
 app.post("/urls/:shortURL/delete", (request, response) => {
-  delete urlDatabase[request.params.shortURL];
-  response.redirect('back');
+  if (userID === urlDatabase[userID]){
+    delete urlDatabase[request.params.shortURL];
+    response.redirect('back');
+  } else {
+    response.redirect('/login');	
+  }
 });
 
 // adds a new shortURL / longURL pair to the database
 app.post("/urls/new", (request, response) => {
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = request.body.longURL;
+  urlDatabase[userID][shortURL] = request.body.longURL;
   response.redirect(`http://localhost:8080/urls/${shortURL}`);
 });
 
