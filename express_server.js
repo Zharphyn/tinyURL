@@ -1,7 +1,7 @@
 /*jshint esversion: 6 */
 
 const express = require("express");
-const url = require('url');
+//const url = require('url');
 const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
@@ -12,7 +12,7 @@ const app = express();
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
-  keys: [process.env.SECRET_KEY || 'toronitz'],
+  keys: [process.env.SECRET_KEY || 'toronitz']
 }));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
@@ -25,7 +25,7 @@ const server = 'localhost:8080';
 // sets the view engine
 app.set('view engine', 'ejs');
 
-const urlDatabase = { 
+const urlDatabase = {
   "zds001": {
     "b2xVn2": "http://www.lighthouselabs.ca",
     "9sm5xK": "http://www.1pmscouts.rocks",
@@ -33,25 +33,26 @@ const urlDatabase = {
   }
 };
 
-const users = { 
+const users = {
   "zds001": {
-    id: "zds001", 
-    email: "brad@zharphyn.ca", 
+    id: "zds001",
+    email: "brad@zharphyn.ca",
     password: "$2a$10$e5A1yqhI2ARxP0..SmUM.eGpNk1UbxTb0BirIdzG5NxlZBmz.Uppe"
   },
- "Xgt6I0": {
-    id: "Xgt6I0", 
-    email: "user2@example.com", 
+  "Xgt6I0": {
+    id: "Xgt6I0",
+    email: "user2@example.com",
     password: "dishwasher-funk"
   }
 };
 
+// saltRounds is used during password Hashing
 const saltRounds = 10;
 // define emply user object
 const emptyUser = {
-	id: '',
-	email: '',
-	password: ''
+  id: '',
+  email: '',
+  password: ''
 };
 
 
@@ -60,25 +61,23 @@ let userID = '';
 
 function findUserID(email){
   for (let user in users) {
-  	if (users[user].email === email) {
-  		return user;
-  	}
+    if (users[user].email === email) {
+      return user;
+    }
   }
   return '';
 }
 
 
 // checks if email is empty or already exists
-function checkEmailAndPassword(email,password) {
+function checkEmailAndPassword(email, password) {
   if (email !== '' && password !== '') {
     for (const keys in users) {
-  	  if (email === users[keys].email) {
-  	  	console.log('Already exists');
-  	    return false;
-  	  }
+      if (email === users[keys].email) {
+        return false;
+      }
     }
   } else {
-  	console.log('Is empty');
     return false;
   }
   return true;
@@ -92,7 +91,7 @@ function generateRandomString() {
   const possible = alphabet + alphabet.toUpperCase() + '1234567890';
 
   for (var i = 0; i < 6; i++) {
-  	text += possible.charAt(Math.floor(Math.random() * possible.length));
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
 
   return text;
@@ -110,16 +109,15 @@ app.get("/urls.json", (request, response) => {
   response.json(urlDatabase);
 });
 
+// displays the user's urls
 app.get("/urls", (request, response) => {
   let templateVars = {urlDatabase: urlDatabase[userID]};
   if (userID) {
-  	templateVars.user = users[userID];
+    templateVars.user = users[userID];
     response.render("urls_index", templateVars);
   } else {
-  	response.redirect('/login');
+    response.redirect('/login');
   }
-
-
 });
 
 app.get("/urls/new", (request, response) => {
@@ -132,18 +130,20 @@ app.get("/urls/new", (request, response) => {
   }
 });
 
+// displays the shortURL and longURL for editing
 app.get("/urls/:shortURL", (request, response) => {
   if (userID) {
     let shortURL = request.params.shortURL;
     let longURL = urlDatabase[userID][shortURL];
     let templateVars = {shortURL, longURL};
-  	templateVars.user = users[userID];
+    templateVars.user = users[userID];
     response.render("urls_show", templateVars);
   } else {
-  	response.redirect('/login');
+    response.redirect('/login');
   }
 });
 
+// takes the user to the longURL based upon the shortURL
 app.get("/u/:shortURL", (request, response) => {
   let shortURL = request.params.shortURL;
   let longURL = '';
@@ -152,9 +152,9 @@ app.get("/u/:shortURL", (request, response) => {
   } else {
     for (let key in urlDatabase) {
       if (urlDatabase[key][shortURL] !== undefined) {
-  	    longURL = urlDatabase[key][shortURL];
-  	  }
-  	}
+        longURL = urlDatabase[key][shortURL];
+      }
+    }
   }
   if (longURL !== undefined && longURL !== '') {
     response.status(302);
@@ -168,33 +168,32 @@ app.get("/u/:shortURL", (request, response) => {
 app.get("/login", (request, response) => {
   let templateVars = {};
   if (userID) {
-  	templateVars.user = users[userID];
+    templateVars.user = users[userID];
   } else {
-  	templateVars.user = emptyUser;
+    templateVars.user = emptyUser;
   }	response.render("login", templateVars);
-
-
 });
 
+// opens the register page
 app.get("/register", (request, response) => {
   let templateVars = {};
   if (userID) {
-  	templateVars.user = users[userID];
+    templateVars.user = users[userID];
   } else {
-  	templateVars.user = emptyUser;
+    templateVars.user = emptyUser;
   }
-	response.render('register', templateVars);
+  response.render('register', templateVars);
 });
 
+// creates a new registration
 app.post("/register", (request, response) => {
   const email = request.body.email;
 
-  if (checkEmailAndPassword(email,request.body.password)) { 
+  if (checkEmailAndPassword(email, request.body.password)) {
     const password = bcrypt.hashSync(request.body.password, saltRounds);
-    console.log(password);
     userID = generateRandomString();
     users[userID] = { id: userID, email: email, password: password };
-    request.session.email =  users[userID].email; 
+    request.session.email =  users[userID].email;
     response.redirect("/urls");
   } else {
     response.status(400);
@@ -210,24 +209,22 @@ app.post("/login", (request, response) => {
   const password = request.body.password;
   if (email !== '' && password !== '')  {
     userID = findUserID(email);
-    console.log(userID);
-  	if (userID !== '' && bcrypt.compareSync(password, users[userID].password))  {
-      request.session.email = users[userID].email; 
+    if (userID !== '' && bcrypt.compareSync(password, users[userID].password))  {
+      request.session.email = users[userID].email;
       response.redirect("/urls");
-  	} else {
-  	  console.log('UserID / Password verification failure');
+    } else {
       response.status(400);
       response.redirect('https://http.cat/400');
     }
   } else {
-  	console.log('Failed basic email / password existance checker');
-  	resquest.session.email('Unknown');
-  	response.status(400);
+    resquest.session.email('Unknown');
+    response.status(400);
     response.redirect('https://http.cat/400');
   }
   response.redirect('back');
 });
 
+// logs out the current user
 app.post("/logout", (request, response) => {
   userID = '';
   request.session = null;
@@ -238,11 +235,11 @@ app.post("/logout", (request, response) => {
 app.post("/urls", (request, response) => {
   let templateVars = {urlDatabase: urlDatabase[userID]};
   if (userID) {
-  	templateVars.user = users[userID];
+    templateVars.user = users[userID];
     response.render("urls_index", templateVars);
   } else {
-  	templateVars.user = emptyUser;
-  	response.redirect('/login');
+    templateVars.user = emptyUser;
+    response.redirect('/login');
   }
 });
 
@@ -264,22 +261,22 @@ app.post("/urls/:shortURL", (request, response) => {
   if (userID) {
     let shortURL = request.params.shortURL;
     let longURL = urlDatabase[userID][shortURL];
-    let templateVars = {longURL : longURL, shortURL : shortURL};
-  	templateVars.user = users[userID];
+    let templateVars = {longURL: longURL, shortURL: shortURL};
+    templateVars.user = users[userID];
     response.render("urls_show", templateVars );
   } else {
-  	response.redirect('/login');
+    response.redirect('/login');
   }
 });
 
 // Update the longURL using same shortURL
 app.post("/urls/show/:shortURL", (request, response) => {
-	if (userID) {
-	  urlDatabase[userID][request.params.shortURL] = request.body.name;
-	  response.redirect(`${server}/urls_index`);
-	} else {
-	  response.redirect('/login');
-	}
+  if (userID) {
+    urlDatabase[userID][request.params.shortURL] = request.body.name;
+    response.redirect(`${server}/urls_index`);
+  } else {
+    response.redirect('/login');
+  }
 });
 
 // Deletes a shortURL / longURL pair from the database
@@ -288,7 +285,7 @@ app.post("/urls/:shortURL/delete", (request, response) => {
     delete urlDatabase[request.params.shortURL];
     response.redirect('back');
   } else {
-    response.redirect('/login');	
+    response.redirect('/login');
   }
 });
 
