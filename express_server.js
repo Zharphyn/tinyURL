@@ -12,7 +12,7 @@ const app = express();
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
-  keys: [process.env.SECRET_KEY || 'dvelopment'],
+  keys: [process.env.SECRET_KEY || 'toronitz'],
 }));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
@@ -31,10 +31,10 @@ const urlDatabase = {
 };
 
 const users = { 
-  "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+  "zds001": {
+    id: "zds001", 
+    email: "brad@zharphyn.ca", 
+    password: "$2a$10$e5A1yqhI2ARxP0..SmUM.eGpNk1UbxTb0BirIdzG5NxlZBmz.Uppe"
   },
  "user2RandomID": {
     id: "user2RandomID", 
@@ -119,14 +119,13 @@ app.get("/urls", (request, response) => {
 });
 
 app.get("/urls/new", (request, response) => {
-  let templateVars = {urlDatabase: urlDatabase};
-  console.log(userID);
-  if (userID) {
-  	templateVars.user = users[userID];
+  if (userID != ''){
+    let templateVars = {urlDatabase: urlDatabase};
+    templateVars.user = users[userID];
+    response.render("urls_new", templateVars);
   } else {
-  	templateVars.user = emptyUser;
+    response.redirect('/login');
   }
-  response.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (request, response) => {
@@ -179,9 +178,10 @@ app.post("/register", (request, response) => {
 
   if (checkEmailAndPassword(email,request.body.password)) { 
     const password = bcrypt.hashSync(request.body.password, saltRounds);
+    console.log(password);
     userID = generateRandomString();
     users[userID] = { id: userID, email: email, password: password };
-    response.cookie('email', users[userID].email); 
+    request.session.email =  users[userID].email; 
     response.redirect("/urls");
   } else {
     response.status(400);
@@ -199,7 +199,7 @@ app.post("/login", (request, response) => {
     userID = findUserID(email);
     console.log(userID);
   	if (userID !== '' && bcrypt.compareSync(password, users[userID].password))  {
-      response.cookie('email', users[userID].email); 
+      request.session.email = users[userID].email; 
       response.redirect("/urls");
   	} else {
   	  console.log('UserID / Password verification failure');
@@ -208,7 +208,7 @@ app.post("/login", (request, response) => {
     }
   } else {
   	console.log('Failed basic email / password existance checker');
-  	response.cookie('email', 'Unknown');
+  	resquest.session.email('Unknown');
   	response.status(400);
     response.redirect('https://http.cat/400');
   }
@@ -217,7 +217,7 @@ app.post("/login", (request, response) => {
 
 app.post("/logout", (request, response) => {
   userID = '';
-  response.clearCookie('email');
+  request.session = null;
   response.redirect('back');
 
 });
