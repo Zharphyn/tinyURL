@@ -1,7 +1,7 @@
 /*jshint esversion: 6 */
 
 const express = require("express");
-//const url = require('url');
+const url = require('url');
 const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
@@ -147,6 +147,7 @@ app.get("/urls/:shortURL", (request, response) => {
 app.get("/u/:shortURL", (request, response) => {
   let shortURL = request.params.shortURL;
   let longURL = '';
+  console.log(userID);
   if (userID) {
     longURL = urlDatabase[userID][shortURL];
   } else {
@@ -209,6 +210,7 @@ app.post("/login", (request, response) => {
   const password = request.body.password;
   if (email !== '' && password !== '')  {
     userID = findUserID(email);
+    console.log('login time ' + userID);
     if (userID !== '' && bcrypt.compareSync(password, users[userID].password))  {
       request.session.email = users[userID].email;
       response.redirect("/urls");
@@ -245,15 +247,7 @@ app.post("/urls", (request, response) => {
 
 // Convert shortURL to longURL and go to longURL site
 app.post("/urls/u/:shortURL", (request, response) => {
-  if (longURL !== undefined) {
-    let shortURL = request.params.shortURL;
-    let longURL = urlDatabase[userID][shortURL];
-    response.status(302);
-    response.redirect(longURL);
-  } else {
-    response.status(404);
-    response.redirect('https://http.cat/404');
-  }
+  response.redirect(`/urls/u/${request.params.shortURL}`);
 });
 
 // Edit the link for a shortURL
