@@ -3,7 +3,7 @@
 <head>
   <style>
     input[type='text'] { font-size: 36px; }
-    button[type='submit'] { font-size: 36px; }
+    button[class="update-button"] { font-size: 36px; }
   </style>
 </head>
 <body>
@@ -13,7 +13,7 @@
     <form method= "post" action="/urls/show/<%= shortURL %>" >
       <h2>Shortened URL : http://localhost:8080/u/<%= shortURL %> </h2>
       <input size = 60;  id="longURL" type="text" name="name" value="<%= longURL %>">
-      <button type="submit">Update</button>
+      <button type="submit" class="update-button">Update</button>
     </form>
   <footer>
     <% include ./partials/_footer %>

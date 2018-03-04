@@ -12,11 +12,11 @@
     <% if(user.email){ %>
       <form method= "post" action="/logout" style= "display: inline;" >
         <%= user.email %>
-        <button type="submit">Logout</button>
+        <button type="submit" class-"login-button">Logout</button>
       </form>
     <% } else{ %>  
       <form method= "get" action="/login" style= "display: inline;" >
-        <button type="submit">Login</button>
+        <button type="submit class='login-button">Login</button>
       </form>
     <% } %>
 

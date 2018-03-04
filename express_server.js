@@ -2,11 +2,11 @@
 
 const express = require("express");
 const url = require('url');
-const cookieParser = require('cookie-parser');
+//const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
-const _ = require("underscore");
+// const _ = require("underscore");
 
 const app = express();
 app.use(bodyParser.urlencoded({extended: true}));
@@ -15,7 +15,7 @@ app.use(cookieSession({
   keys: [process.env.SECRET_KEY || 'toronitz']
 }));
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+//app.use(cookieParser());
 
 // default port 8080
 const PORT = process.env.PORT || 8080;
@@ -144,10 +144,10 @@ app.get("/urls/:shortURL", (request, response) => {
 });
 
 // takes the user to the longURL based upon the shortURL
-app.get("/u/:shortURL", (request, response) => {
+app.get("/urls/u/:shortURL", (request, response) => {
   let shortURL = request.params.shortURL;
   let longURL = '';
-  console.log(userID);
+  response.end("<html><body>Over b>Here!!</b></body></html>\n");
   if (userID) {
     longURL = urlDatabase[userID][shortURL];
   } else {
@@ -157,6 +157,7 @@ app.get("/u/:shortURL", (request, response) => {
       }
     }
   }
+
   if (longURL !== undefined && longURL !== '') {
     response.status(302);
     response.redirect(longURL);
@@ -205,12 +206,10 @@ app.post("/register", (request, response) => {
 
 // Logs in the user
 app.post("/login", (request, response) => {
-  console.log(request.body);
   const email = request.body.email;
   const password = request.body.password;
   if (email !== '' && password !== '')  {
     userID = findUserID(email);
-    console.log('login time ' + userID);
     if (userID !== '' && bcrypt.compareSync(password, users[userID].password))  {
       request.session.email = users[userID].email;
       response.redirect("/urls");
@@ -247,7 +246,8 @@ app.post("/urls", (request, response) => {
 
 // Convert shortURL to longURL and go to longURL site
 app.post("/urls/u/:shortURL", (request, response) => {
-  response.redirect(`/urls/u/${request.params.shortURL}`);
+
+  response.redirect('/urls/u/:shortURL');
 });
 
 // Edit the link for a shortURL
@@ -267,7 +267,7 @@ app.post("/urls/:shortURL", (request, response) => {
 app.post("/urls/show/:shortURL", (request, response) => {
   if (userID) {
     urlDatabase[userID][request.params.shortURL] = request.body.name;
-    response.redirect(`${server}/urls_index`);
+    response.redirect('/urls_index');
   } else {
     response.redirect('/login');
   }
@@ -286,11 +286,13 @@ app.post("/urls/:shortURL/delete", (request, response) => {
 // adds a new shortURL / longURL pair to the database
 app.post("/urls/new", (request, response) => {
   let shortURL = generateRandomString();
+  console.log(shortURL);
   urlDatabase[userID][shortURL] = request.body.longURL;
-  response.redirect(`http://localhost:8080/urls/${shortURL}`);
+  response.redirect('/urls');
 });
 
 //H Hello World
 app.get("/hello", (request, response) => {
+  response.redirect(`/urls/`);
   response.end("<html><body>Hello <b>World</b></body></html>\n");
 });
