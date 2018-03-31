@@ -6,11 +6,13 @@
       <% include partials/_header %>
     </header>
     
-    <form action="/urls/new" method="POST" style="margin:150px;">
-      <label for="longURL">Enter a URL:</label>
-      <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px">
-      <input type="submit" value="Submit">
-    </form>
+    <div>
+      <form method= "post"  style= "display: inline;" action="/create">
+        <label for="longURL">Enter a URL:</label>
+        <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px" value="<%= longURL %>">
+        <button type="submit" class="update-button">Create</button>
+      </form>
+    </div>
     
     <footer>
       <% include ./partials/_footer %>

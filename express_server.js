@@ -120,6 +120,7 @@ app.get("/urls/new", (request, response) => {
   if (request.session.loggedIn) {
     let templateVars = { urlDatabase: urlDatabase[request.session.userID] };
     templateVars.user = users[request.session.userID];
+    templateVars.longURL = '';
     response.render("urls_new", templateVars);
   } else {
     response.redirect('/login');
@@ -279,10 +280,19 @@ app.post("/urls/:shortURL/delete", (request, response) => {
 });
 
 // adds a new shortURL / longURL pair to the database
-app.post("/urls/new", (request, response) => {
+app.post("/create", (request, response) => {
   let shortURL = generateRandomString();
-  urlDatabase[request.session.userID][shortURL] = request.body.longURL;
-  response.redirect('/urls');
+  console.log(shortURL, request.body.longURL);
+  if (request.session.loggedIn){
+    console.log('I am logged in!!');
+    console.log(`userID = ${request.session.userID} | urlDatabase = ${urlDatabase[request.session.userID]}`);
+    urlDatabase[request.session.userID][shortURL] = request.body.longURL;
+    console.log(urlDatabase[request.session.userID][shortURL], request.body.longURL);
+  } else {
+    console.log('I am not loggedIn');
+  }
+  console.log('Redirecting');
+  response.redirect('/');
 });
 
 //H Hello World

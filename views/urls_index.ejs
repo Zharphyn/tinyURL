@@ -8,6 +8,9 @@
     <% include ./partials/_header %>
   </header>   
   <h2>URLS</h2>
+    <form method= "post"  style= "display: inline;" action="/urls/new">
+      <button type="submit">Create New</button>
+    </form>  
   <ul>
     <% for (var key in urlDatabase) { %>
     <li>
